@@ -45,6 +45,3 @@ Thumbs.db
 
 # Husky
 .husky/_/
-
-# Assets (covers e músicas servidas publicamente)
-public/
