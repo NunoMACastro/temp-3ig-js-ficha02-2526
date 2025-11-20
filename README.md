@@ -14,19 +14,21 @@
 
 [Regressar ao índice de repositórios](https://github.com/NunoMACastro/edu-3ig-indice-2526 "Índice de repositórios do 3.º IG")
 
-<br>
-
-![Imagem ilustrativa da página principal](./public/docs/home.png "A página principal da Agenda de Estudos, com resumo de lembretes.")
-_Figura 1: A página principal da Agenda de Estudos, com resumo de lembretes._
-
-<br>
-
 ## Índice
 
 -   [Teórica](#te%C3%B3rica)
 -   [Tutorial passo a passo](#tutorial-passo-a-passo)
 -   [Exercícios](#exerc%C3%ADcios)
 -   [Changelog](#changelog)
+
+---
+
+<br>
+
+![Imagem ilustrativa da página principal](./public/docs/home.png "A página principal da Agenda de Estudos, com resumo de lembretes.")
+_Figura 1: A página principal da Agenda de Estudos, com resumo de lembretes._
+
+<br>
 
 ---
 
