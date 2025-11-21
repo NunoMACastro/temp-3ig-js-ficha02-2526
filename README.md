@@ -212,7 +212,7 @@ _Exemplo simplificado do uso de partials em EJS._
 
 > **NOTA**: Ao longo deste tutorial vais ter que editar ficheiros e colocar código entre blocos de código já existentes.
 > <br> O local exato onde colocar o código é indicado em cada passo através da explicação dada antes do bloco de código.
-> <br> Além disso, o local exato é marcado com o seguinte bloco de comentário:
+> <br> Além disso, **o local exato é marcado com o seguinte bloco de comentário**:
 
 ```js
 /* ----------------------------------------------------
