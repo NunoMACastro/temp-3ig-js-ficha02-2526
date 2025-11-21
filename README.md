@@ -1,8 +1,9 @@
-# Ficha 2 - Agenda de Estudos (Node.js · Express · EJS)
+# Ficha 2 - Web app de Lembretes
 
 **Dados rápidos**
 
 -   **Turma:** 12º ano de Informática de Gestão
+-   **Conteúdo:** Node.js, Express, EJS, MVC, rotas, controladores, middlewares
 -   **Objetivo:** construir um servidor web MVC simples com Node.js, Express e EJS, usando dados simulados.
 -   **Template:** Está disponível no repositório dado nas aulas, um template com pastas criadas, partials EJS, CSS e o ficheiro `src/data/lembretes.js` pré-preenchido. Podes começar pelo template em GitHub Codespaces (botão “Code” > “Create codespace”) ou clonar no VS Code (`git clone <URL_DO_REPO_DA_TURMA>`, depois `npm install` e `npm start`).
 
@@ -12,7 +13,10 @@
 
 <br>
 
-[Regressar ao índice de repositórios](https://github.com/NunoMACastro/edu-3ig-indice-2526 "Índice de repositórios do 3.º IG")
+![Imagem ilustrativa da página principal](./public/docs/home.png "A página principal da Agenda de Estudos, com resumo de lembretes.")
+_Figura 1: A página principal da Agenda de Estudos, com resumo de lembretes._
+
+<br>
 
 ## Índice
 
@@ -20,15 +24,6 @@
 -   [Tutorial passo a passo](#tutorial-passo-a-passo)
 -   [Exercícios](#exerc%C3%ADcios)
 -   [Changelog](#changelog)
-
----
-
-<br>
-
-![Imagem ilustrativa da página principal](./public/docs/home.png "A página principal da Agenda de Estudos, com resumo de lembretes.")
-_Figura 1: A página principal da Agenda de Estudos, com resumo de lembretes._
-
-<br>
 
 ---
 
@@ -51,7 +46,7 @@ _Figura 1: A página principal da Agenda de Estudos, com resumo de lembretes._
 -   Single-threaded: há um único main thread a correr o teu JS; tarefas demoradas são delegadas a threads internas da libuv.
 -   Nota: uma thread é uma linha de execução de um programa. Com uma única thread principal, só se faz uma coisa de cada vez no JS; outras threads internas tratam do I/O pesado.
 -   Event-driven: o Node vive de eventos e callbacks. Quando uma operação termina, a callback associada é colocada na event queue para correr quando o main thread estiver livre.
--   Evento = algo que acontece (ficheiro lido, pedido recebido). Callback = função passada como argumento e chamada mais tarde, quando o evento ocorre.
+-   Evento: algo que acontece (ficheiro lido, pedido recebido). Callback = função passada como argumento e chamada mais tarde, quando o evento ocorre.
 -   Exemplo de callback:
 
     ```js
@@ -215,9 +210,35 @@ _Exemplo simplificado do uso de partials em EJS._
 
 <br>
 
-> Sempre que fores inserir/modificar código, lê primeiro a explicação da linha anterior. Os blocos abaixo já trazem comentários e estrutura pensada para te guiar passo a passo.
+> **NOTA**: Ao longo deste tutorial vais ter que editar ficheiros e colocar código entre blocos de código já existentes.
+> <br> O local exato onde colocar o código é indicado em cada passo através da explicação dada antes do bloco de código.
+> <br> Além disso, o local exato é marcado com o seguinte bloco de comentário:
+
+```js
+/* ----------------------------------------------------
+
+ 🟡 🟡 ⬇ INSERIR AQUI A ** Função ** ⬇ 🟡 🟡
+
+---------------------------------------------------- */
+```
 
 ### 0) Preparação do template e ambiente
+
+Ficheiros incluídos no template:
+
+| Ficheiro/Pasta     | Descrição                                    |
+| ------------------ | -------------------------------------------- |
+| `index.js`         | Ponto de entrada do servidor (vazio).        |
+| Pasta `src/`       | Onde vai ficar o código fonte da aplicação.  |
+| Pasta `public/`    | Onde está o `style.css`.                     |
+| `package.json`     | Dependências do node.js e scripts npm.       |
+| `README.md`        | Este ficheiro com o tutorial.                |
+| Pasta `src/data/`  | Pasta para dados simulados (ex.: lembretes). |
+| Pasta `src/views/` | Pasta para vistas EJS (já com partials).     |
+
+<br>
+
+Passos iniciais:
 
 -   Garante que tens Node.js 18+ e npm instalados.
 -   Abre o template:
@@ -231,7 +252,9 @@ npm install
 npm start
 ```
 
-O servidor arranca em `http://localhost:3000`.
+O servidor deve arrancar e fechar logo de seguida uma vez que o `index.js` ainda está vazio.
+
+---
 
 ### 1) `index.js`: ponto de entrada do servidor
 
@@ -270,11 +293,15 @@ module.exports = app;
 
 ### 3) `src/app.js`: configurar motor de vistas e pastas
 
-Agora vamos ativar o EJS e apontar a pasta das views. Coloca logo abaixo da criação do `app`.
+Agora vamos ativar o EJS e apontar a pasta das views.
+É necessário indicar ao Express que vamos usar EJS como motor de templates e onde estão os ficheiros `.ejs`.
+Isso é feito usando o método `app.set`. Para definir o motor de vistas, usamos `app.set("view engine", "ejs")`. Para definir a pasta das vistas, usamos `app.set("views", path.join(__dirname, "views"))`. Em que `__dirname` é a pasta atual (`src/`) e juntamos com `views` para obter o caminho completo.
+
+Coloca logo abaixo da criação do `app`.
 
 ```js
 /* ---------------------------------------------------------------------------
-    1️⃣ Motor de templates (EJS)
+    1 Motor de templates (EJS)
 --------------------------------------------------------------------------- */
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
@@ -285,15 +312,16 @@ app.set("views", path.join(__dirname, "views"));
 ### 4) `src/app.js`: ficheiros estáticos e leitura de formulários
 
 Estes middlewares tratam do CSS/imagens e de `req.body` para formulários.
+Como temos ficheiros estáticos na pasta `public/`, usamos `express.static` para os servir.
 
 ```js
 /* ---------------------------------------------------------------------------
-    2️⃣ Pasta pública (ficheiros estáticos)
+    2 Pasta pública (ficheiros estáticos)
 --------------------------------------------------------------------------- */
 app.use(express.static(path.join(__dirname, "..", "public")));
 
 /* ---------------------------------------------------------------------------
-    3️⃣ Middleware para processar formulários (req.body)
+    3 Middleware para processar formulários (req.body)
 --------------------------------------------------------------------------- */
 app.use(express.urlencoded({ extended: true }));
 ```
@@ -308,7 +336,7 @@ Coloca-o por agora no fim do ficheiro `src/app.js` (podes voltar aqui mais tarde
 
 ```js
 /* ---------------------------------------------------------------------------
-    5️⃣ Página 404 (caso nenhuma rota seja encontrada)
+    4 Página 404 (caso nenhuma rota seja encontrada)
 --------------------------------------------------------------------------- */
 app.use((req, res) => {
     res.status(404).render("404", { tituloPagina: "Página não encontrada" });
@@ -323,11 +351,14 @@ app.use((req, res) => {
 
 Agora vamos ligar a rota principal `/` ao router `homeRoutes`. Ainda não existe o ficheiro `homeRoutes.js`; vais criá-lo já a seguir. **Não testes o servidor antes de terminares toda a execução da rota**, senão o Node vai queixar-se de módulo em falta.
 
-Logo acima do middleware 404, coloca:
+Logo acima do **middleware 404**, coloca:
 
 ```js
 /* ---------------------------------------------------------------------------
-    4️⃣ Encaminhamento da rota principal
+    5 Encaminhamento da rota principal
+
+    NOTA: ISTO FICA ACIMA DO MIDDLEWARE 404
+
 --------------------------------------------------------------------------- */
 const homeRoutes = require("./routes/homeRoutes");
 
@@ -340,7 +371,7 @@ Garante que a ordem em `app.js` fica assim, de forma geral:
 1. Configuração do EJS (`app.set`).
 2. Middlewares (`static`, `urlencoded`, etc.).
 3. Encaminhamento de rotas (`app.use("/", homeRoutes)`).
-4. Middleware 404 (sempre no fim).
+4. Middleware 404 (**sempre no fim**).
 
 ---
 
@@ -469,20 +500,36 @@ Cria a pasta `src/controllers` (se ainda não existir) e dentro dela o ficheiro 
 Vamos começar por uma função de utilidade que recebe a lista de lembretes e calcula números para o dashboard (total, atrasados, próximos 7 dias, próxima data).
 
 ```js
-"use strict";
+"use strict"; // modo estrito do JS
+/*
+    O modo estrito ajuda a evitar erros comuns, tais como:
+    - Uso de variáveis não declaradas
+    - Sobrescrever propriedades não configuráveis
+    - Eliminar variáveis não elimináveis
+
+    É uma boa prática usar "use strict" no início dos ficheiros JS, sobretudo em ambientes de desenvolvimento.
+
+*/
 const lembretes = require("../data/lembretes");
 
+/**
+ * Calcula estatísticas base (total, atrasados, próximos 7 dias e próxima data)
+ * sobre a lista de lembretes.
+ * @param {{ id:number, titulo:string, data:string, descricao:string }[]} lista Lista de lembretes com datas no formato YYYY-MM-DD.
+ * @returns {{ total:number, atrasados:number, proximos7:number, proximaData:(string|null) }} Objeto agregado para o dashboard.
+ */
 function calcularEstatisticas(lista) {
-    const hoje = new Date();
-    hoje.setHours(0, 0, 0, 0);
+    const hoje = new Date(); // data atual
+    hoje.setHours(0, 0, 0, 0); // definir horas a 00:00 para comparar só datas
 
-    const msPorDia = 24 * 60 * 60 * 1000;
-    const daquiA7 = new Date(hoje.getTime() + 7 * msPorDia);
+    const msPorDia = 24 * 60 * 60 * 1000; // milissegundos por dia
+    const daquiA7 = new Date(hoje.getTime() + 7 * msPorDia); // data daqui a 7 dias
 
     let atrasados = 0;
     let proximos7 = 0;
     const futurasOuHoje = [];
 
+    // Percorrer a lista de lembretes e calcular estatísticas
     for (const l of lista) {
         const data = new Date(l.data);
         data.setHours(0, 0, 0, 0);
@@ -495,12 +542,15 @@ function calcularEstatisticas(lista) {
         }
     }
 
+    // Ordenar datas futuras e hoje para encontrar a próxima data
     futurasOuHoje.sort((a, b) => a - b);
     const proximaData =
         futurasOuHoje.length > 0
             ? futurasOuHoje[0].toISOString().slice(0, 10)
             : null;
 
+    // Devolver objeto com estatísticas
+    // O objeto tem as propriedades: total, atrasados, proximos7, proximaData
     return { total: lista.length, atrasados, proximos7, proximaData };
 }
 ```
@@ -514,6 +564,12 @@ function calcularEstatisticas(lista) {
 Ainda no mesmo ficheiro, logo a seguir à função anterior, adiciona o controlador que vai ser chamado pela rota `/`. Este controlador usa `calcularEstatisticas`, prepara uma mensagem de boas-vindas e manda renderizar a vista `home`.
 
 ```js
+/**
+ * Controlador da home: agrega estatísticas e renderiza a vista "home".
+ * @param req Pedido HTTP.
+ * @param res Resposta HTTP (usa res.render).
+ * @returns {void}
+ */
 function mostrarHome(req, res) {
     const stats = calcularEstatisticas(lembretes);
     const mensagem =
@@ -537,11 +593,10 @@ module.exports = { mostrarHome };
 
 ### 11) `src/views/home.ejs`: página inicial
 
-O template já traz `src/views/home.ejs`, mas convém veres (ou recriares) o conteúdo para perceberes o que esta vista faz: usa as variáveis enviadas pelo controlador (`tituloPagina`, `mensagem`, `stats`) e inclui partials para o layout.
+**O template já traz `src/views/home.ejs`**, mas convém veres (ou recriares) o conteúdo para perceberes o que esta vista faz: usa as variáveis enviadas pelo controlador (`tituloPagina`, `mensagem`, `stats`) e inclui partials para o layout.
 
-```ejs
-<%- include('partials/_head') %>
-<%- include('partials/_navbar') %>
+```html
+<%- include('partials/_head') %> <%- include('partials/_navbar') %>
 
 <main class="container">
     <div class="p-5 mb-4 bg-white rounded-3 shadow-sm">
@@ -549,8 +604,14 @@ O template já traz `src/views/home.ejs`, mas convém veres (ou recriares) o con
             <h1 class="display-6 fw-bold"><%= tituloPagina %></h1>
             <p class="fs-5 text-muted mb-4"><%= mensagem %></p>
             <div class="d-flex gap-2">
-                <a class="btn btn-primary btn-lg" href="/lembretes">Ver Lembretes</a>
-                <a class="btn btn-outline-secondary btn-lg" href="/lembretes/novo/form">Criar Lembrete</a>
+                <a class="btn btn-primary btn-lg" href="/lembretes"
+                    >Ver Lembretes</a
+                >
+                <a
+                    class="btn btn-outline-secondary btn-lg"
+                    href="/lembretes/novo/form"
+                    >Criar Lembrete</a
+                >
             </div>
         </div>
     </div>
@@ -588,13 +649,13 @@ Deve aparecer a página inicial com a mensagem e os cartões de resumo. Se algum
 
 ### 12) `src/app.js`: rota principal `/lembretes`
 
-Com a página inicial a funcionar, vamos adicionar a área de lembretes. Atualiza o bloco de rotas em `src/app.js` para também montar `lembretesRoutes`.
+Com a página inicial a funcionar, vamos adicionar a área de listar lembretes. Atualiza o bloco de rotas em `src/app.js` para também montar `lembretesRoutes`.
 
 Substitui o bloco anterior de rotas por:
 
 ```js
 /* ---------------------------------------------------------------------------
-    4️⃣ Encaminhamento das rotas principais
+    45 Encaminhamento das rotas principais
 --------------------------------------------------------------------------- */
 const homeRoutes = require("./routes/homeRoutes");
 const lembretesRoutes = require("./routes/lembretesRoutes");
@@ -631,8 +692,16 @@ Cria o ficheiro `src/controllers/lembretesController.js`. Para já só tratamos 
 
 ```js
 "use strict";
+// Carregamos todos os lembretes do ficheiro
+// Se reparares, os lembretes são um array de objetos, logo podemos usá-los diretamente e podemos percorrê-los com um forEach na vista.
 const lembretes = require("../data/lembretes");
 
+/**
+ * Controlador de listagem: renderiza a vista "lembretes" com todos os itens.
+ * @param req Pedido HTTP.
+ * @param res Resposta HTTP (usa res.render).
+ * @returns {void}
+ */
 function listarLembretes(req, res) {
     // Variáveis passadas para a vista "lembretes":
     // - tituloPagina: texto do título da página/lista
@@ -643,6 +712,7 @@ function listarLembretes(req, res) {
     });
 }
 
+// Exportar o controlador para ser usado nas rotas
 module.exports = {
     listarLembretes,
 };
@@ -654,9 +724,8 @@ module.exports = {
 
 O template já traz `src/views/lembretes.ejs`. Confirma (ou recria) o conteúdo seguinte, que espera exatamente as variáveis `tituloPagina` e `lembretes`:
 
-```ejs
-<%- include('partials/_head') %>
-<%- include('partials/_navbar') %>
+```html
+<%- include('partials/_head') %> <%- include('partials/_navbar') %>
 
 <main class="container">
     <div class="d-flex align-items-center justify-content-between mb-3">
@@ -681,14 +750,21 @@ O template já traz `src/views/lembretes.ejs`. Confirma (ou recria) o conteúdo 
                     <p class="card-text"><%= l.descricao %></p>
                 </div>
                 <div class="card-footer d-flex gap-2">
-                    <a class="btn btn-primary btn-sm" href="/lembretes/<%= l.id %>">Ver</a>
+                    <a
+                        class="btn btn-primary btn-sm"
+                        href="/lembretes/<%= l.id %>"
+                        >Ver</a
+                    >
                     <form
                         action="/lembretes/<%= l.id %>/apagar"
                         method="post"
                         class="ms-auto"
                         onsubmit="return confirm('Apagar este lembrete?');"
                     >
-                        <button class="btn btn-outline-danger btn-sm" type="submit">
+                        <button
+                            class="btn btn-outline-danger btn-sm"
+                            type="submit"
+                        >
                             Apagar
                         </button>
                     </form>
@@ -737,6 +813,11 @@ const lembretesController = require("../controllers/lembretesController");
 // READ (lista principal de lembretes)
 router.get("/", lembretesController.listarLembretes);
 
+/* ----------------------------------------------------
+
+ 🟡 🟡 ⬇ INSERIR AQUI A ** ROTA ** ⬇ 🟡 🟡
+
+---------------------------------------------------- */
 // READ (detalhe de um lembrete por ID)
 router.get("/:id", lembretesController.detalheLembrete);
 
@@ -762,6 +843,19 @@ function listarLembretes(req, res) {
     });
 }
 
+/* ----------------------------------------------------
+
+ 🟡 🟡 ⬇ INSERIR AQUI O ** CONTROLADOR ** ⬇ 🟡 🟡
+
+---------------------------------------------------- */
+
+/**
+ * Controlador de detalhe: encontra um lembrete pelo :id e mostra a vista "detalhe"
+ * ou devolve um 404 específico quando não existe.
+ * @param req Pedido HTTP com params.id numérico.
+ * @param res Resposta HTTP (render ou 404).
+ * @returns {void}
+ */
 function detalheLembrete(req, res) {
     const id = Number(req.params.id);
     const lembrete = lembretes.find((l) => l.id === id);
@@ -795,9 +889,8 @@ module.exports = {
 
 Confirma (ou recria) o ficheiro `src/views/detalhe.ejs`, que espera a variável `lembrete` (ou `null`) e `tituloPagina`:
 
-```ejs
-<%- include('partials/_head') %>
-<%- include('partials/_navbar') %>
+```html
+<%- include('partials/_head') %> <%- include('partials/_navbar') %>
 
 <main class="container" style="max-width: 780px">
     <% if (!lembrete) { %>
@@ -855,6 +948,12 @@ const express = require("express");
 const router = express.Router();
 const lembretesController = require("../controllers/lembretesController");
 
+/* ----------------------------------------------------
+
+ 🟡 🟡 ⬇ INSERIR AQUI A ** ROTA /novo/form ** ⬇ 🟡 🟡
+
+---------------------------------------------------- */
+
 // CREATE (form)
 router.get("/novo/form", lembretesController.mostrarFormularioNovo);
 
@@ -863,6 +962,12 @@ router.get("/", lembretesController.listarLembretes);
 
 // READ (detalhe)
 router.get("/:id", lembretesController.detalheLembrete);
+
+/* ----------------------------------------------------
+
+ 🟡 🟡 ⬇ INSERIR AQUI A ** ROTA ** de CRIAR  ⬇ 🟡 🟡
+
+---------------------------------------------------- */
 
 // CREATE (guardar novo lembrete)
 router.post("/", lembretesController.criarLembrete);
@@ -874,9 +979,12 @@ module.exports = router;
 
 ### 20) `src/controllers/lembretesController.js`: helpers e controladores de criação
 
-No controlador de lembretes, vamos adicionar funções de apoio (`gerarId`, `validarFormulario`) e os controladores `mostrarFormularioNovo` e `criarLembrete`.
+No controlador de lembretes, vamos adicionar:
 
-Atualiza `src/controllers/lembretesController.js` para algo deste género:
+-   As funções de apoio `gerarId` e `validarFormulario`
+-   E os controladores `mostrarFormularioNovo` e `criarLembrete`.
+
+Podes adicionar estas funções e controladores logo após o `detalheLembrete`, ficando o ficheiro completo assim:
 
 ```js
 "use strict";
@@ -906,14 +1014,27 @@ function detalheLembrete(req, res) {
     });
 }
 
-// Gera um novo ID incremental com base na lista atual
+/* ------------------------------------------------------------
+
+ 🟡 🟡 ⬇ INSERIR AQUI AS ** FUNÇÕES E CONTROLADORES ** ⬇ 🟡 🟡
+
+------------------------------------------------------------ */
+
+/**
+ * Gera um novo ID incremental com base nos IDs existentes dos lembretes.
+ * @returns Próximo ID disponível (max actual + 1 ou 1 se vazio).
+ */
 function gerarId() {
     const ids = lembretes.map((l) => l.id);
     const max = ids.length ? Math.max(...ids) : 0;
     return max + 1;
 }
 
-// Valida e normaliza os dados vindos do formulário
+/**
+ * Valida e normaliza os campos do formulário de lembrete.
+ * @param body Objeto vindo de req.body.
+ * @returns Arrays de erros e valores limpos de espaços.
+ */
 function validarFormulario(body) {
     const erros = [];
     const valores = {
@@ -939,7 +1060,12 @@ function validarFormulario(body) {
     return { erros, valores };
 }
 
-// Mostra o formulário vazio
+/**
+ * Controlador GET do formulário de criação: renderiza "novo" com valores vazios.
+ * @param req Pedido HTTP.
+ * @param res Resposta HTTP (usa res.render).
+ * @returns {void}
+ */
 function mostrarFormularioNovo(req, res) {
     // Variáveis esperadas pela vista "novo":
     // - tituloPagina: título do formulário
@@ -952,7 +1078,13 @@ function mostrarFormularioNovo(req, res) {
     });
 }
 
-// Recebe os dados do formulário e cria um novo lembrete
+/**
+ * Controlador POST de criação: valida dados, cria um lembrete em memória
+ * e redireciona para a lista; em caso de erro re-renderiza o formulário com 400.
+ * @param req Pedido HTTP com body do formulário.
+ * @param res Resposta HTTP (render ou redirect).
+ * @returns {void}
+ */
 function criarLembrete(req, res) {
     const { erros, valores } = validarFormulario(req.body);
 
@@ -980,8 +1112,8 @@ function criarLembrete(req, res) {
 module.exports = {
     listarLembretes,
     detalheLembrete,
-    mostrarFormularioNovo,
-    criarLembrete,
+    mostrarFormularioNovo, // 🟡 🟡 ⬅ INSERIR
+    criarLembrete, // 🟡 🟡 ⬅ INSERIR
 };
 ```
 
@@ -999,7 +1131,7 @@ O template já traz o partial de erros e a vista do formulário, mas revemos aqu
 
 **Partial `src/views/partials/_alerts.ejs`** - mostra uma lista de erros, se existirem:
 
-```ejs
+```html
 <% if (typeof erros !== 'undefined' && erros.length) { %>
 <div class="alert alert-danger">
     <ul class="m-0 ps-3">
@@ -1013,9 +1145,8 @@ O template já traz o partial de erros e a vista do formulário, mas revemos aqu
 
 **Vista `src/views/novo.ejs`** - formulário para criar lembretes, usando `erros` e `valores`:
 
-```ejs
-<%- include('partials/_head') %>
-<%- include('partials/_navbar') %>
+```html
+<%- include('partials/_head') %> <%- include('partials/_navbar') %>
 
 <main class="container" style="max-width: 720px">
     <h2 class="mb-3"><%= tituloPagina %></h2>
@@ -1061,7 +1192,9 @@ O template já traz o partial de erros e a vista do formulário, mas revemos aqu
                 placeholder="Ex.: Rever objetos, funções e exercícios."
                 required
                 minlength="5"
-            ><%= valores.descricao %></textarea>
+            >
+<%= valores.descricao %></textarea
+            >
             <div class="form-text">Pelo menos 5 caracteres.</div>
         </div>
 
@@ -1111,6 +1244,12 @@ router.get("/:id", lembretesController.detalheLembrete);
 
 // CREATE (post do form)
 router.post("/", lembretesController.criarLembrete);
+
+/* ----------------------------------------------------
+
+ 🟡 🟡 ⬇ INSERIR AQUI A ** ROTA APAGAR ** ⬇ 🟡 🟡
+
+---------------------------------------------------- */
 
 // DELETE (apagar via POST simples)
 router.post("/:id/apagar", lembretesController.apagarLembrete);
@@ -1213,7 +1352,19 @@ function criarLembrete(req, res) {
     res.redirect("/lembretes");
 }
 
-// Remove um lembrete e volta à lista
+/* ------------------------------------------------------
+
+ 🟡 🟡 ⬇ INSERIR AQUI O ** CONTROLADOR APAGAR ** ⬇ 🟡 🟡
+
+------------------------------------------------------ */
+
+/**
+ * Controlador de apagar: remove um lembrete pelo :id e redireciona de volta
+ * à listagem; devolve 404 em caso de ID inexistente.
+ * @param req Pedido HTTP com params.id numérico.
+ * @param res Resposta HTTP (send 404 ou redirect).
+ * @returns {void}
+ */
 function apagarLembrete(req, res) {
     const id = Number(req.params.id);
     const idx = lembretes.findIndex((l) => l.id === id);
@@ -1231,7 +1382,7 @@ module.exports = {
     detalheLembrete,
     mostrarFormularioNovo,
     criarLembrete,
-    apagarLembrete,
+    apagarLembrete, // 🟡 🟡 ⬅ INSERIR
 };
 ```
 
@@ -1277,5 +1428,6 @@ Se tudo estiver a funcionar, a tua Agenda de Estudos (Node.js + Express + EJS) e
 
 ## Changelog
 
+-   **V1.2 | 2025-12-10**: adição de comentários explicativos em todo o código.
 -   **V1.1 | 2025-12-02**: correção de pequenos erros e melhorias na documentação.
 -   **V1 | 2025-11-18**: versão inicial do guia de implementação.
