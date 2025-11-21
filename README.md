@@ -1426,6 +1426,11 @@ Se tudo estiver a funcionar, a tua Agenda de Estudos (Node.js + Express + EJS) e
 
 ---
 
+## Créditos
+
+-   **Autor**: Nuno Castro
+-   **Licença**: [MIT](https://opensource.org/licenses/MIT)
+
 ## Changelog
 
 -   **V1.2 | 2025-12-10**: adição de comentários explicativos em todo o código.
